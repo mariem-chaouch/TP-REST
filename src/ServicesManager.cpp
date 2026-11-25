@@ -47,7 +47,24 @@ http::status ServicesManager::queryService(std::string& out, const std::string& 
     http::status status ;
     switch (method)
     {
-        case http::verb::get:status=service->get(obj, id);break;
+    case http::verb::get:
+        status=service->get(obj, id);break;
+    case http::verb::post:
+        {
+            if (id.has_value())
+            {
+                throw ServiceException(http::status::method_not_allowed,"POST requires a collection URL");
+            }
+            boost::system::error_code ec;
+            json::value input = json::parse(in, ec);
+            if (ec)
+            {
+                throw ServiceException(http::status::bad_request,ec.message());
+            }
+            status=service->post(obj, input);
+            ;break;
+        }
+
         default:throw ServiceException(http::status::not_implemented,"Method not implemented");
     }
 
