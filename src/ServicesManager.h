@@ -25,7 +25,7 @@ public:
     ///   url    : cible de la requête, ex. "/user/1"
     ///   method : méthode HTTP (http::verb::get, http::verb::post, ...)
     /// Renvoie le statut HTTP de la réponse. Peut jeter une ServiceException.
-    http::status queryService(std::string& out, const std::string& in,
+    http::status queryService(std::string& out, std::string& location, const std::string& in,
                               std::string_view url, http::verb method);
 
 private:

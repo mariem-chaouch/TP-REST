@@ -24,9 +24,10 @@ handleRequest(ServicesManager& manager, const http::request<http::string_body>& 
     res.set(http::field::server, "TP-REST (Boost.Beast)");
 
     std::string out;
+    std::string location;
     http::status status;
     try {
-        status = manager.queryService(out, req.body(), req.target(), req.method());
+        status = manager.queryService(out, location, req.body(), req.target(), req.method());
     }
     catch (const ServiceException& e) {
         status = e.status();
@@ -38,6 +39,11 @@ handleRequest(ServicesManager& manager, const http::request<http::string_body>& 
     }
 
     res.result(status);
+
+    if (!location.empty())
+    {
+        res.set(http::field::location, location);
+    }
     // 204 No Content et 304 Not Modified ne doivent pas avoir de corps.
     if (!out.empty() && status != http::status::no_content
                      && status != http::status::not_modified) {

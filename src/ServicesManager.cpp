@@ -22,7 +22,7 @@ AbstractService* ServicesManager::findService(std::string_view url) const
     return nullptr;
 }
 
-http::status ServicesManager::queryService(std::string& out, const std::string& in,
+http::status ServicesManager::queryService(std::string& out, std::string& location, const std::string& in,
                                            std::string_view url, http::verb method)
 {
     url = url.substr(0, url.find('?'));
@@ -62,6 +62,19 @@ http::status ServicesManager::queryService(std::string& out, const std::string& 
                     throw ServiceException(http::status::bad_request,ec.message());
                 }
                 status=service->post(obj, input);
+                if (status == http::status::created)
+                {
+                    const json::object& responseObject = obj.as_object();
+
+                    const json::value* createdId =
+                        responseObject.if_contains("id");
+
+                    if (createdId != nullptr && createdId->is_int64())
+                    {
+                        location = "/user/" +
+                            std::to_string(createdId->as_int64());
+                    }
+                }
                 ;break;
             }
         case http::verb::patch:
