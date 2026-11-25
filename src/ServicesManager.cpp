@@ -43,12 +43,14 @@ http::status ServicesManager::queryService(std::string& out, const std::string& 
         }
         id=value;
     }
-    if (method != http::verb::get) {
-        throw ServiceException(http::status::not_implemented,"Method not implemented");
+    json::value obj ;
+    http::status status ;
+    switch (method)
+    {
+        case http::verb::get:status=service->get(obj, id);break;
+        default:throw ServiceException(http::status::not_implemented,"Method not implemented");
     }
 
-    json::value obj ;
-    http::status status = service->get(obj, id);
     out= json::serialize(obj);
 
     return status;
