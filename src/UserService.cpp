@@ -6,8 +6,15 @@ http::status UserService::get(json::value& out, std::optional<int> id) const
 {
     if (!id.has_value())
     {
-        throw ServiceException(
-            http::status::bad_request, "Missing ID");
+        json::array users;
+        for (const auto& [userId, user] : userDB_.getUsers())
+        {
+            json::value obj = json::value_from(user);
+            obj.as_object()["id"] = userId;
+            users.push_back(obj);
+        }
+        out = users;
+        return http::status::ok;
     }
     const User* user = userDB_.getUser(*id);
     if (user == nullptr)
