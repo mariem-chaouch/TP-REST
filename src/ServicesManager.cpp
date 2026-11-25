@@ -3,34 +3,41 @@
 #include <charconv>
 #include <optional>
 #include <utility>
-#include <iostream>
+
 void ServicesManager::registerService(std::unique_ptr<AbstractService> service)
 {
-    // TODO Question 3
-    (void)service;
+    services_.push_back(std::move(service));
 }
 
 AbstractService* ServicesManager::findService(std::string_view url) const
 {
-    // TODO Question 3
-    (void)url;
+    for (const auto& service : services_)
+    {
+        const std::string pattern = service->getPattern();
+        if (url == pattern ||(url.starts_with(pattern))&& url[pattern.size()] == '/')
+        {
+            return (service.get());
+        }
+    }
     return nullptr;
 }
 
 http::status ServicesManager::queryService(std::string& out, const std::string& in,
                                            std::string_view url, http::verb method)
 {
-    if (url != "/version") {
-        throw ServiceException(http::status::not_found,"Invalid URL");
+    url = url.substr(0, url.find('?'));
+    AbstractService* service =findService(url);
+    if (service == nullptr) {
+        throw ServiceException(http::status::not_found,"Service not found");
     }
 
     if (method != http::verb::get) {
-        throw ServiceException(http::status::method_not_allowed,"Method not allowed");
+        throw ServiceException(http::status::not_implemented,"Method not implemented");
     }
-    json::value obj = {{"major", 1},{"minor", 0}};
-
+    json::value obj ;
+    http::status status = service->get(obj, std::nullopt);
     out= json::serialize(obj);
 
-    return (http::status::ok);
+    return status;
 
 }
