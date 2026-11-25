@@ -44,6 +44,8 @@ public:
     /// Suppression de la ressource `id`.
     virtual http::status remove(std::optional<int> id);
 
+    virtual http::status put(std::optional<int> id, const json::value& in);
+
 protected:
     std::string pattern_;
 };

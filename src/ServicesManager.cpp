@@ -64,33 +64,50 @@ http::status ServicesManager::queryService(std::string& out, const std::string& 
                 status=service->post(obj, input);
                 ;break;
             }
-    case http::verb::patch:
-        {
-            if (!id.has_value())
+        case http::verb::patch:
             {
-                throw ServiceException(http::status::method_not_allowed,"PATCH requires an ID");
+                if (!id.has_value())
+                {
+                    throw ServiceException(http::status::method_not_allowed,"PATCH requires an ID");
+                }
+                boost::system::error_code ec;
+                json::value input = json::parse(in, ec);
+                if (ec)
+                {
+                    throw ServiceException(http::status::bad_request,ec.message());
+                }
+                status=service->patch(id, input);
+                ;break;
             }
-            boost::system::error_code ec;
-            json::value input = json::parse(in, ec);
-            if (ec)
+        case http::verb::delete_:
             {
-                throw ServiceException(http::status::bad_request,ec.message());
+                if (!id.has_value())
+                {
+                    throw ServiceException(http::status::method_not_allowed,"DELETE requires an ID");
+                }
+                status=service->remove(id);
+                break;
             }
-            status=service->patch(id, input);
-            ;break;
-        }
-    case http::verb::delete_:
-        {
-            if (!id.has_value())
+        case  http::verb::put:
             {
-                throw ServiceException(http::status::method_not_allowed,"DELETE requires an ID");
+                if (!id.has_value()) {
+                    throw ServiceException(http::status::method_not_allowed, "PUT requires a resource ID");
+                }
+
+                boost::system::error_code ec;
+                json::value input = json::parse(in, ec);
+
+                if (ec)
+                    throw ServiceException(http::status::bad_request, "Invalid JSON body");
+
+                status = service->put(id, input);
+                ;break;
             }
-            status=service->remove(id);
-            break;
-        }
 
         default:throw ServiceException(http::status::not_implemented,"Method not implemented");
     }
+
+
 
     out= json::serialize(obj);
 

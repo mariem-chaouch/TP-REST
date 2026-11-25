@@ -12,6 +12,7 @@ public:
     http::status post(json::value& out, const json::value& in) override;
     http::status patch(std::optional<int> id, const json::value& in) override;
     http::status remove(std::optional<int> id) override;
+    http::status put(std::optional<int> id, const json::value& in) override;
 
 private:
     UserDB& userDB_;

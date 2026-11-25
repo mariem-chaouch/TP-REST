@@ -23,3 +23,7 @@ http::status AbstractService::remove(std::optional<int>)
 {
     throw ServiceException(http::status::method_not_allowed, "DELETE not supported by " + pattern_);
 }
+http::status AbstractService::put(std::optional<int>, const json::value&)
+{
+    throw ServiceException(http::status::method_not_allowed, "PUT not supported by " + pattern_);
+}

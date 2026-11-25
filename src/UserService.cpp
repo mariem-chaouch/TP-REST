@@ -108,3 +108,43 @@ http::status UserService::remove(std::optional<int> id)
     }
     return (http::status::no_content);
 }
+
+http::status UserService::put(std::optional<int> id, const json::value& in)
+{
+    if (!id.has_value())
+        throw ServiceException(http::status::method_not_allowed, "Missing user ID");
+
+    const User* existingUser = userDB_.getUser(*id);
+
+    if (existingUser == nullptr)
+        throw ServiceException(http::status::not_found, "User not found");
+
+    if (!in.is_object())
+        throw ServiceException(http::status::bad_request, "Expected JSON object");
+
+    const auto& obj = in.as_object();
+
+    auto name = obj.if_contains("name");
+    auto age = obj.if_contains("age");
+
+    if (name == nullptr || !name->is_string() || name->as_string().empty())
+        throw ServiceException(http::status::bad_request, "Invalid name");
+
+    if (age == nullptr || !age->is_int64())
+        throw ServiceException(http::status::bad_request, "Invalid age");
+
+    int64_t ageValue = age->as_int64();
+
+    if (ageValue < 0 || ageValue > 150)
+        throw ServiceException(http::status::bad_request, "Age must be between 0 and 150");
+
+    User updatedUser{
+        std::string(name->as_string()),
+        static_cast<int>(ageValue)
+    };
+
+    if (!userDB_.setUser(*id, updatedUser))
+        throw ServiceException(http::status::not_found, "User not found");
+
+    return http::status::no_content;
+}
