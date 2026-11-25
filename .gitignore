@@ -1,0 +1,19 @@
+# CMake
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+
+# CLion
+.idea/
+
+# Fichiers compilés
+*.o
+*.a
+*.so
+
+# Fichiers temporaires
+*~
+*.swp
