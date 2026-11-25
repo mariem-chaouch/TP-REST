@@ -66,9 +66,9 @@ http::status ServicesManager::queryService(std::string& out, const std::string& 
             }
     case http::verb::patch:
         {
-            if (id.has_value())
+            if (!id.has_value())
             {
-                throw ServiceException(http::status::method_not_allowed,"PATCH requires a collection URL");
+                throw ServiceException(http::status::method_not_allowed,"PATCH requires an ID");
             }
             boost::system::error_code ec;
             json::value input = json::parse(in, ec);

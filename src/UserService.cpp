@@ -45,9 +45,48 @@ http::status UserService::post(json::value& out, const json::value& in)
 
 http::status UserService::patch(std::optional<int> id, const json::value& in)
 {
-    // TODO Question 10
-    (void)id; (void)in;
-    throw ServiceException(http::status::not_implemented, "Not implemented yet");
+    if (!id.has_value())
+    {
+        throw ServiceException( http::status::method_not_allowed, "Missing ID");
+    }
+    const User* user = userDB_.getUser(*id);
+
+    if (user == nullptr)
+    {
+        throw ServiceException(http::status::not_found, "User not found");
+    }
+    if (!in.is_object())
+    {
+        throw ServiceException(http::status::bad_request,"Expected a JSON object");
+    }
+    User updatedUser = *user;
+    const json::object& obj = in.as_object();
+
+    for (const auto& [cle, valeur] : obj)
+    {
+        if (cle == "name")
+        {
+            if (!valeur.is_string() ||valeur.as_string().empty())
+            {
+                throw ServiceException(http::status::bad_request,"Invalid name");
+            }
+            updatedUser.name =std::string(valeur.as_string());
+        }
+        else if (cle == "age")
+        {
+            if (!valeur.is_int64() ||valeur.as_int64() < 0 ||valeur.as_int64() > 150)
+            {
+                throw ServiceException(http::status::bad_request,"Invalid age");
+            }
+            updatedUser.age =static_cast<int>(valeur.as_int64());
+        }
+        else
+        {
+            throw ServiceException(http::status::bad_request,"Unknown field");
+        }
+    }
+    userDB_.setUser(*id, updatedUser);
+    return (http::status::no_content);
 }
 
 http::status UserService::remove(std::optional<int> id)
