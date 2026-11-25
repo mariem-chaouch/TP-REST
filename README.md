@@ -97,3 +97,18 @@ est stocké séparément de ses attributs.
 
 Les objets obtenus sont regroupés dans un `json::array`.
 Le comportement initial de GET avec identifiant reste inchangé.
+### Q14 — Remplacement d'un utilisateur (PUT)
+
+Nous avons ajouté la méthode PUT à l'interface `AbstractService`, puis implémenté son traitement dans `UserService` et son routage dans `ServicesManager`.
+
+Contrairement à PATCH, PUT remplace l'ensemble des attributs d'un utilisateur. Nous imposons donc la présence et la validité de tous les champs, avant de construire un nouvel objet `User` et de remplacer l'utilisateur existant dans la base.
+
+La méthode retourne `204 No Content` lorsque le remplacement réussit. Les erreurs sont gérées conformément aux autres méthodes : `405 Method Not Allowed` si l'identifiant est absent, `404 Not Found` si l'utilisateur n'existe pas et `400 Bad Request` si les données fournies sont invalides.
+
+### Q15 — Ajout de l'en-tête Location
+
+Nous avons modifié l'interface de `ServicesManager::queryService()` afin de permettre la transmission d'un en-tête supplémentaire au serveur HTTP.
+
+Lorsqu'un POST crée un utilisateur avec succès et retourne le statut `201 Created`, `ServicesManager` récupère l'identifiant généré dans la réponse JSON et construit l'URI de la ressource créée.
+
+`HttpServer` utilise ensuite cette information pour ajouter l'en-tête `Location` à la réponse HTTP. Le client peut ainsi accéder directement à la nouvelle ressource grâce à l'URI retournée, sans avoir à rechercher son identifiant.
