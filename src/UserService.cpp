@@ -91,7 +91,13 @@ http::status UserService::patch(std::optional<int> id, const json::value& in)
 
 http::status UserService::remove(std::optional<int> id)
 {
-    // TODO Question 12
-    (void)id;
-    throw ServiceException(http::status::not_implemented, "Not implemented yet");
+    if (!id.has_value())
+    {
+        throw ServiceException( http::status::method_not_allowed, "Missing ID");
+    }
+    if (!userDB_.removeUser(*id))
+    {
+        throw ServiceException(http::status::not_found, "User not found");
+    }
+    return (http::status::no_content);
 }
