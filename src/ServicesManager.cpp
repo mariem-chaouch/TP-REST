@@ -14,7 +14,7 @@ AbstractService* ServicesManager::findService(std::string_view url) const
     for (const auto& service : services_)
     {
         const std::string pattern = service->getPattern();
-        if (url == pattern ||(url.starts_with(pattern))&& url[pattern.size()] == '/')
+        if (url == pattern ||((url.starts_with(pattern)) && url[pattern.size()] == '/'))
         {
             return (service.get());
         }
@@ -30,12 +30,25 @@ http::status ServicesManager::queryService(std::string& out, const std::string& 
     if (service == nullptr) {
         throw ServiceException(http::status::not_found,"Service not found");
     }
-
+    std::optional<int> id = std::nullopt;
+    const std::string& pattern = service->getPattern();
+    if (url.size() > pattern.size()+1)
+    {
+        std::string_view texte = url.substr(pattern.size() + 1);
+        int value=0;
+        auto [ptr, ec] = std::from_chars(texte.data(), texte.data() + texte.size(), value);
+        if (ec != std::errc() || ptr != texte.data()+texte.size())
+        {
+            throw ServiceException(http::status::bad_request,"Invalid ID");
+        }
+        id=value;
+    }
     if (method != http::verb::get) {
         throw ServiceException(http::status::not_implemented,"Method not implemented");
     }
+
     json::value obj ;
-    http::status status = service->get(obj, std::nullopt);
+    http::status status = service->get(obj, id);
     out= json::serialize(obj);
 
     return status;
