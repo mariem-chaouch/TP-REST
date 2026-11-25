@@ -79,7 +79,15 @@ http::status ServicesManager::queryService(std::string& out, const std::string& 
             status=service->patch(id, input);
             ;break;
         }
-
+    case http::verb::delete_:
+        {
+            if (!id.has_value())
+            {
+                throw ServiceException(http::status::method_not_allowed,"DELETE requires an ID");
+            }
+            status=service->remove(id);
+            break;
+        }
 
         default:throw ServiceException(http::status::not_implemented,"Method not implemented");
     }
