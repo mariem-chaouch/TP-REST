@@ -4,9 +4,19 @@ UserService::UserService(UserDB& userDB) : AbstractService("/user"), userDB_(use
 
 http::status UserService::get(json::value& out, std::optional<int> id) const
 {
-    // TODO Question 6 (et Question 13 pour GET /user)
-    (void)out; (void)id;
-    throw ServiceException(http::status::not_implemented, "Not implemented yet");
+    if (!id.has_value())
+    {
+        throw ServiceException(
+            http::status::bad_request, "Missing ID");
+    }
+    const User* user = userDB_.getUser(*id);
+    if (user == nullptr)
+    {
+        throw ServiceException(
+            http::status::not_found, "User not found");
+    }
+    out = json::value_from(*user);
+    return (http::status::ok);
 }
 
 http::status UserService::post(json::value& out, const json::value& in)
